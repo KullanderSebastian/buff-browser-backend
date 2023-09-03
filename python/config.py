@@ -1,0 +1,1 @@
+BUFF_COOKIE = 'Device-Id=1wvc69WcPrMYKDfLiQeo; Locale-Supported=en; game=csgo; session=1-UMfZ_BzGEFmw1SjerucTsgqULn0tEOLAnCH5KOGDjJ7A2037223316; csrf_token=IjAwY2U1Y2M4Y2VjNjUyYjdiYTc2N2FhNTRmZTM2MGI1YjI3NWU1NmMi.F8pkYQ.ATQ0G1eX9dcxSU9rgQLXezDthO4'
