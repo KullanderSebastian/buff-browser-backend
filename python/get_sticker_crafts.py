@@ -2,18 +2,13 @@ import requests
 import config
 from get_sticker_collection_data import get_sticker_collection_data
 import time
-from pymongo_add_documents import pymongo_add_documents
+from database_sync import populate_db
 
 request_amount = 0
+start = time.time()
 
 sticker_collection_data = get_sticker_collection_data([
-    "katowice 2014",
-    "cologne 2014",
-    "dreamhack 2014",
-    "katowice 2015",
-    "Luminosity Gaming (Holo) | MLG Columbus 2016",
-    "Flammable (Foil)",
-    "Crown (Foil)"
+    "(holo) | dreamhack 2014",
 ])
 
 headers = {
@@ -40,10 +35,9 @@ def do_calculations(weapon_list, sticker_price):
     for item in weapon_list:
         sticker_prices = float(sticker_price) * 4
         sticker_amounts = 4
-
+            
         skins_data.append({
             "sticker_name": sticker["name"],
-            "sticker_amount": sticker_amounts,
             "item_name": item["market_hash_name"],
             "item_img": item["goods_info"]["icon_url"],
             "market_price": item["sell_reference_price"],
@@ -72,7 +66,7 @@ for sticker in sticker_collection_data:
         total_pages = response["data"]["total_page"]
         print(f"Getting data from sticker {sticker['name']} current page: {page_num} total pages: {total_pages}")
 
-        time.sleep(3)
+        time.sleep(5)
 
         if total_pages > 1:
             for i in range(2, total_pages + 1):
@@ -82,13 +76,22 @@ for sticker in sticker_collection_data:
 
                 all_weapons.extend(response["data"]["items"])
 
-                time.sleep(3)
+                time.sleep(5)
     
     do_calculations(weapon_list=all_weapons, sticker_price=sticker["price"])
     all_weapons = []
 
 
 skins_data_sorted = sorted(skins_data, key=lambda x: x["sticker_percentage_price"])
-pymongo_add_documents(skins_data_sorted)
+#pymongo_delete_documents()
+#pymongo_add_documents(skins_data_sorted)
+#pymongo_create_hashes(skins_data_sorted)
+#pymongo_check_hashes(skins_data_sorted)
+
+#create_db_and_table(skins_data_sorted, "buff_data", "skins", [0, 1], [4])
+populate_db(skins_data_sorted, "buff_data", "skins", [0, 1], [4])
+
+end = time.time()
 print("DONE")
 print(f"REQUESTS AMOUNT: {request_amount}")
+print(end - start)

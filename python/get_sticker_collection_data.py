@@ -25,10 +25,15 @@ def get_sticker_collection_data(sticker_collection):
         response = response.json()
 
         for item in response["data"]["items"]:
-            sticker_prices.append({
-                "name": item["value"],
-                "id": item["id"],
-                "price": item["formated_price"].split()[1]
-            })
+            try:
+                sticker_prices.append({
+                    "name": item["value"],
+                    "id": item["id"],
+                    "price": item["formated_price"].split()[1]
+                })
+            except IndexError:
+                print("Moving On.")
 
     return sticker_prices
+
+get_sticker_collection_data(["team dignitas (holo) | cologne 2014"])

@@ -1,1 +1,1 @@
-BUFF_COOKIE = 'Device-Id=1wvc69WcPrMYKDfLiQeo; Locale-Supported=en; game=csgo; session=1-UMfZ_BzGEFmw1SjerucTsgqULn0tEOLAnCH5KOGDjJ7A2037223316; csrf_token=IjAwY2U1Y2M4Y2VjNjUyYjdiYTc2N2FhNTRmZTM2MGI1YjI3NWU1NmMi.F8pkYQ.ATQ0G1eX9dcxSU9rgQLXezDthO4'
+BUFF_COOKIE = 'Device-Id=iYqakpCwr066HoPWwr1K; Locale-Supported=en; game=csgo; session=1-BIlr6Ag310efOJoMn8HoW1cDP-9Q0vUwM4XbaGk93Sto2037223316; client_id=e0FRt5Syc_nEv9XCOc5nQQ; csrf_token=IjkzMWU2ZmU4YmM4YzRlMTVlYTI2MWE3ODI2ODc5ZTBkNjRlOTZiYWUi.GD-oWg.DzEZ1J3vxI7tVnLgzzdfF54Yb64'
