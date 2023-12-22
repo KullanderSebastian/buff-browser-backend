@@ -1,12 +1,13 @@
 import express from "express";
 import session from "express-session";
 import mongoose from "mongoose";
-import router from "./routes/skin.routes.js"
+import skinRouter from "./routes/skin.routes.js";
+import userRouter from "./routes/user.routes.js";
 import cors from "cors";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import User from "./models/user.model.js";
-import generateJWT from "./jwtGenerator.js";
+import { generateJWT } from "./jwtGenerator.js";
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -77,7 +78,7 @@ app.get(
 
             if (existingUser) {
                 const token = generateJWT(existingUser);
-                return res.redirect(`http://localhost:3000/profile?token=${token}`);
+                return res.redirect(`http://localhost:3000/profile?token=${token}&gId=${id}`);
             }
 
             const newUser = new User({
@@ -90,7 +91,7 @@ app.get(
 
             const token = generateJWT(newUser);
 
-            res.redirect(`http://localhost:3000/profile?token=${token}`);
+            res.redirect(`http://localhost:3000/profile?token=${token}&gId=${id}`);
         } catch (error) {
             console.error("Error during user creation: ", error);
             res.redirect("/failed");
@@ -107,7 +108,8 @@ app.use(cors(corsOptions));
 app.use(express.json({ extended: true }));
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/", router)
+app.use("/skin", skinRouter);
+app.use("/user", userRouter);
 
 app.listen(port, () => {
     console.log("Listening on port: " + port)
