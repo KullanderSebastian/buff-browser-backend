@@ -42,7 +42,11 @@ exports.getSkins = async (req, res) => {
 
         const totalItems = await Skin.countDocuments(query);
         const totalPages = Math.ceil(totalItems / limit);
-        const skins = await Skin.find(query).skip(offset).limit(limit).exec()
+        const skins = await Skin.find(query)
+                                .skip(offset)
+                                .limit(limit)
+                                .sort({ sticker_percentage_price: 1 })
+                                .exec()
 
         res.json({
             data: skins,
@@ -58,22 +62,4 @@ exports.getSkins = async (req, res) => {
         console.log(error);
         res.status(500).send("Internal Server Error: ", error);
     }
-}
-
-exports.deleteAllSkins = async (req, res) => {
-        try {
-            // List all collections
-            const collections = Object.keys(mongoose.connection.collections);
-            
-            for (const collectionName of collections) {
-                const collection = mongoose.connection.collections[collectionName];
-                await collection.drop(); // Drop each collection
-            }
-    
-            console.log("All collections have been deleted.");
-            mongoose.disconnect();
-        } catch (error) {
-            console.error("Error deleting collections:", error);
-            mongoose.disconnect();
-        }
 }

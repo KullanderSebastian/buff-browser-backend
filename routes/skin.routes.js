@@ -5,6 +5,4 @@ const skinRouter = express.Router();
 
 skinRouter.post("/getskins", skinController.getSkins);
 
-skinRouter.post("/deleteskins", skinController.deleteAllSkins);
-
 module.exports = skinRouter;

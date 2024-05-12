@@ -60,6 +60,7 @@ def sync_db(data, db_name, collection_name, key_selection_array, keep_track_on_c
     client, db = connect_to_database(db_name)
 
     collection = db[collection_name]
+    temp_incoming_hashes = db["temp_incoming_hashes"]
 
     existing_hashes = set(doc["hash"] for doc in collection.find({}, {"hash": 1}))
     incoming_hashes = set()
@@ -108,7 +109,7 @@ def sync_db(data, db_name, collection_name, key_selection_array, keep_track_on_c
 
             for key in item.keys():
                 document[key] = item[key]
-
+ 
                 try:
                     for index in keep_track_on_changes_keys:
                         if key in list(item.keys())[index]:
@@ -117,8 +118,14 @@ def sync_db(data, db_name, collection_name, key_selection_array, keep_track_on_c
                     print(f"IndexError: Index {index} is out of range. Please check that you entered a valid position.")
                     return
 
-            document["hash"] = create_hash(item, key_selection_array)
+            hash_value = document["hash"] = create_hash(item, key_selection_array)
 
+            temp_incoming_hashes.insert_one({
+                "item_name": document["item_name"],
+                "sticker_name": document["sticker_name"],
+                "sticker_percentage_price": document["sticker_percentage_price"],
+                "hash": hash_value
+            })
             collection.insert_one(document)
 
     removed_hashes = list(existing_hashes - incoming_hashes)

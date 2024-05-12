@@ -8,7 +8,10 @@ request_amount = 0
 start = time.time()
 
 sticker_collection_data = get_sticker_collection_data([
-    "(holo) | dreamhack 2014",
+    "Natus Vincere (Foil) | DreamHack 2014",
+    #"katowice 2014",
+    #"cologne 2014",
+    #"katowice 2015"
 ])
 
 headers = {
@@ -34,7 +37,6 @@ def get_request(request_url, headers):
 def do_calculations(weapon_list, sticker_price):
     for item in weapon_list:
         sticker_prices = float(sticker_price) * 4
-        sticker_amounts = 4
             
         skins_data.append({
             "sticker_name": sticker["name"],
@@ -83,12 +85,7 @@ for sticker in sticker_collection_data:
 
 
 skins_data_sorted = sorted(skins_data, key=lambda x: x["sticker_percentage_price"])
-#pymongo_delete_documents()
-#pymongo_add_documents(skins_data_sorted)
-#pymongo_create_hashes(skins_data_sorted)
-#pymongo_check_hashes(skins_data_sorted)
 
-#create_db_and_table(skins_data_sorted, "buff_data", "skins", [0, 1], [4])
 populate_db(skins_data_sorted, "buff_data", "skins", [0, 1], [4])
 
 end = time.time()

@@ -7,7 +7,8 @@ import cors from "cors";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import User from "./models/user.model.js";
-import { generateJWT } from "./jwtGenerator.js";
+import { generateJWT, generateRefreshToken, authenticateRefreshToken, authenticateToken } from "./jwtGenerator.js";
+import cookieParser from "cookie-parser";
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -38,8 +39,14 @@ app.use(
 
 const corsOptions = {
     origin: 'http://localhost:3000',
+    credentials: true,
     optionsSuccessStatus: 200
 }
+
+app.use(cors(corsOptions));
+app.use(express.json({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 passport.use(
     new GoogleStrategy(
@@ -74,24 +81,48 @@ app.get(
         const { id, displayName, emails } = req.user;
 
         try {
-            let existingUser = await User.findOne({ googleId: id });
+            let user = await User.findOne({ googleId: id });
 
-            if (existingUser) {
-                const token = generateJWT(existingUser);
-                return res.redirect(`http://localhost:3000/profile?token=${token}&gId=${id}`);
+            if (!user) {
+                user = new User({
+                    googleId: id,
+                    displayName,
+                    email: emails[0].value,
+                    phone: "",
+                });
             }
 
-            const newUser = new User({
-                googleId: id,
-                displayName,
-                email: emails[0].value,
+            const accessToken = generateJWT(user);
+            const refreshToken = await generateRefreshToken();
+
+            console.log("Access Token:", accessToken);
+            console.log("Refresh Token:", refreshToken);
+
+            user.refreshToken = refreshToken;
+            user.refreshTokenExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+            await user.save();
+
+            res.cookie("gId", user.googleId, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
             });
 
-            await newUser.save();
+            res.cookie("accessToken", accessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+                expires: new Date(Date.now() + 15 * 60 * 1000) // 15 minutes
+            });
 
-            const token = generateJWT(newUser);
+            res.cookie("refreshToken", refreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+                expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days 
+            });
 
-            res.redirect(`http://localhost:3000/profile?token=${token}&gId=${id}`);
+            res.redirect(`http://localhost:3000/profile`);
         } catch (error) {
             console.error("Error during user creation: ", error);
             res.redirect("/failed");
@@ -99,14 +130,44 @@ app.get(
     }
 );
 
-app.get("/logout", (req, res) => {
-    req.logout();
-    res.redirect("http://localhost:3000");
+app.get("/auth/status", authenticateToken, (req, res) => {
+    res.json({ authenticated: true, user: req.user });
 });
 
-app.use(cors(corsOptions));
-app.use(express.json({ extended: true }));
-app.use(express.urlencoded({ extended: true }));
+app.post("/auth/refresh", async (req, res) => {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+        return res.status(401).json({ error: "No refresh token provided" });
+    }
+    
+    const result = await authenticateRefreshToken(refreshToken);
+
+    if (result.error) {
+        return res.status(result.statusCode).json({ error: result.error });
+    }
+
+    res.cookie("accessToken", result.accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+        maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+
+    res.json({ success: true, message: "Access token refreshed." });
+});
+
+app.get("/logout", async (req, res) => {
+    const googleId = req.cookies.gId;
+
+    await User.findOneAndUpdate({ googleId: googleId }, { refreshToken: null, refreshTokenExpires: null });
+
+    res.clearCookie("accessToken", { path: "/" });
+    res.clearCookie("refreshToken", { path: "/" });
+    res.clearCookie("gId", { path: "/" });
+
+    res.status(200).json({ message: "Logged out successfully" });
+});
 
 app.use("/skin", skinRouter);
 app.use("/user", userRouter);

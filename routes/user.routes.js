@@ -6,10 +6,12 @@ const userRouter = express.Router();
 
 userRouter.post("/getuser", authenticateToken, userController.getUser);
 
-userRouter.post("/addphone", userController.addPhone);
+userRouter.post("/updatephone", authenticateToken, userController.updatePhone);
 
-userRouter.post("/additemtowatchlist", userController.addItemToWatchlist);
+userRouter.post("/additemtowatchlist", authenticateToken, userController.addItemToWatchlist);
 
-userRouter.get("/watchlist/:gId", userController.getItemsFromWatchlist);
+userRouter.post("/removeitemfromwatchlist", authenticateToken, userController.removeItemFromWatchlist);
+
+userRouter.post("/updatenotificationpreference", authenticateToken, userController.updateNotificationPreference);
 
 module.exports = userRouter;

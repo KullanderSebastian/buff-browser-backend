@@ -5,7 +5,7 @@ def pymongo_delete_documents():
     db = client.buff_data
 
     skins_collection = db["skins"]
-    hashes_collection = db["skins_hash"]
+    hashes_collection = db["temp_incoming_hashes"]
 
     skins_result = skins_collection.delete_many({})
     hashes_result = hashes_collection.delete_many({})
