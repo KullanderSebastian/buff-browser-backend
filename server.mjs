@@ -38,7 +38,7 @@ app.use(
 );
 
 const corsOptions = {
-    origin: 'http://localhost:3000',
+    origin: ['https://buffbrowser.com', 'https://www.buffbrowser.com'],
     credentials: true,
     optionsSuccessStatus: 200
 }
@@ -53,7 +53,7 @@ passport.use(
         {
             clientID: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            callbackURL: "http://localhost:8080/auth/google/callback",
+            callbackURL: "https://backend.buffbrowser.com:8080/auth/google/callback",
         },
         (accessToken, refreshToken, profile, done) => {
             return done(null, profile);
@@ -122,7 +122,7 @@ app.get(
                 expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days 
             });
 
-            res.redirect(`http://localhost:3000/profile`);
+            res.redirect(`https://buffbrowser.com/profile`);
         } catch (error) {
             console.error("Error during user creation: ", error);
             res.redirect("/failed");
