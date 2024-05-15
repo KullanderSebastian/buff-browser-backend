@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 exports.getSkins = async (req, res) => {
+	console.log("im herererer");
     try {
         let query = {};
         const MAX_LIMIT = 100;

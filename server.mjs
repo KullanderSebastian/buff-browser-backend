@@ -9,14 +9,22 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import User from "./models/user.model.js";
 import { generateJWT, generateRefreshToken, authenticateRefreshToken, authenticateToken } from "./jwtGenerator.js";
 import cookieParser from "cookie-parser";
+import https from "https";
+import fs from "fs";
 
 import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT;
+const port = 8443;
 
-//console.log(process.env.MONGO_URI)
+const httpsOptions = {
+    key: fs.readFileSync("../../../../etc/nginx/ssl/private.key.pem"),
+    cert: fs.readFileSync("../../../../etc/nginx/ssl/domain.cert.pem")
+};
+
+console.log(httpsOptions.key);
+console.log(httpsOptions.cert);
 
 mongoose
     .connect(process.env.MONGO_URI, {
@@ -53,7 +61,7 @@ passport.use(
         {
             clientID: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            callbackURL: "https://backend.buffbrowser.com:8080/auth/google/callback",
+            callbackURL: "https://backend.buffbrowser.com/auth/google/callback",
         },
         (accessToken, refreshToken, profile, done) => {
             return done(null, profile);
@@ -72,6 +80,10 @@ passport.deserializeUser((user, done) => {
     done(null, user);
 });
 
+
+app.get("/test", (req, res)=>{
+	res.send("hello");
+})
 app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
 app.get(
@@ -172,6 +184,6 @@ app.get("/logout", async (req, res) => {
 app.use("/skin", skinRouter);
 app.use("/user", userRouter);
 
-app.listen(port, () => {
+https.createServer(httpsOptions, app).listen(port, () => {
     console.log("Listening on port: " + port)
-})
+});
